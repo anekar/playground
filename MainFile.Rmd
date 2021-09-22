@@ -130,6 +130,5 @@ Total <- Total %>%
     arrange(product_id)
 
 # exporting the total file
-write.csv(Total, file ='Total.csv')
 write_xlsx(Total, 'C:/Users/Lazaros/R/playground/Total.xlsx')
 ```
