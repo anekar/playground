@@ -1,0 +1,135 @@
+---
+title: "MainFile"
+output: html_document
+---
+
+```{R, Setting working directory}
+setwd('C:/Users/Lazaros/R/playground')
+.libPaths('C:/Users/Lazaros')
+```
+
+```{R, Importing the libraries}
+library(readr)
+library(tidyverse)
+library(magrittr)
+library(writexl)
+```
+
+```{R, Importing the files}
+Markets <- read_csv("WorkingData/markets_all.csv")
+Categories <- read_csv("WorkingData/categories.csv")
+bar <- read_csv("WorkingData/bar.csv")
+```
+
+```{R, Problems with bar dataset}
+summary(bar)
+# disabling scientific notation
+options(scipen = 999)
+# subcategory_name -> category_name
+bar <- rename(bar, Category_Name = subcategory_name)
+# removing C(7-13)
+bar <- subset(bar, select = -c(7:13))
+# deleting NA values from dataset
+bar <- bar[-c(969:1048575), ]
+```
+
+```{R, Problems with Categories dataset}
+summary(Categories)
+
+# Renaming columns
+Categories <- rename(Categories, Category_Name = name)
+Categories <- rename(Categories, Category_Id = master_category_id)
+
+# replace NAs with Not Available without deleting other columns for keeping name and ids
+Categories <- Categories %>% 
+  group_by(id) %>% 
+  arrange(id) 
+
+
+# Renaming columns
+Categories <- rename(Categories, Category_Name = name)
+Categories <- rename(Categories, Category_Id = master_category_id)
+
+# category 1 ->  Βρεφικά είδη ότι σχετίζεται με βρεφικά 
+# Baby_Products -> μωρομάντηλα(115), Βρεφικές Τροφές(118) Πάνες(116)
+
+# category 2 -> Καθαριότητα το ίδιο αλλα με καθαριστικά
+# Cleaning_Products -> Αντισητπικά(131), Σαμπουάν Αφρόλουτρα(44), Βαμβάκια(27), Αποσμητικά(25), Οδοντόβουρτσες(36), 
+# Χαρτικά(21), Είδη γενικού καθαρισμού(6), Απορρυπαντικά(114), Κρεμοσάπουνα - Σαπούνι(32), 
+# Στοματική υγιεινή(43), Στοματικά διαλύματα(42), Υγρομάντηλα(34), 
+
+# category 3 -> Ποτά - Αναψυκτικά 
+# Drinks -> Αναψυκτικά - Ενεργειακά Ποτά - Ενεργειακά Ποτά(9), Μπύρες(8), Ποτά(14), Χυμοί(23), 
+# Ποτά Αναψυκτικά (3), Κρασιά(13)
+
+# category 4 -> Προσωπική Φροντίδα 
+# Personal_Care -> Κρέμες ενυδάτωσης(30), Αντρική περιποίηση(24), Κρέμες μαλλιών(31), Σερβιέτες(41),
+# Περιποίηση προσώπου(38), Ξυριστικά - Αποτριχωτικά(35), Βαφές μαλλιών(28), Προϊόντα μαλλιών(39), 
+# Κρέμα ημέρας(56), Κρέμα Σώματος(60)
+
+# category 5 -> Τρόφιμα
+# Food -> Σνάκς/Μπισκότα(101), Φούρνος/Ψωμί(112), Τυριά(105), Κρέμες γάλακτος(75), Κύβοι(85), 
+# Επιδόρπια(59), Αλεύρι - Σιμιγδάλι(47), Κατεψυγμένα/Πίτες(69), Κατεψυγμένα/Λαχανικά"(68), 
+# Παγωτά(82), Γάλα(52, 117), Φούρνος/Κριτσίνια(107), Πουρές(87), Λάδι(76), "Έτοιμα γεύματα/Σαλάτες" (61), 
+# Έτοιμα γεύματα/Σούπες(62), Πελτές τομάτας(86), Γιαούρτια(53), Φούρνος/Τσουρέκια(110), 
+# Είδη Ζαχαροπλαστικής(55), Τυποποιημένα Κρεατικά(74), Μπαχαρικά(130), 
+# Αλλαντικά(48), Βούτυρο - Μαργαρίνη(51),Κονσέρβες(73), Δημητριακά(58), Φούρνος/Παξιμάδια(108), 
+# Αυγά(49), Κατεψυγμένα/Πίτσες(70), Κατεψυγμένα Φύλλα/Βάσεις(71), Χυμοί(23), Σάλτσες- Dressings(94), 
+# Ζυμαρικά(63), Όσπρια(79), Ρύζι(90), Φούρνος Φρυγανιές(109), Χυμός Τομάτας(113), Ξύδι(84), Κατεψ Ψάρια(67), κΑΤΕΨ πΑΤΆΤΕς(66),
+# Γλυκά Αλλείμματα(54), 57 , 84
+
+# category 6 -> ΆΛΛΑ
+# Other
+# Classification products based on id 
+# Let' say  For id = 115 where category name  = πανες the id will be moved to category 1 named Baby
+Categories <- Categories %>% 
+  select(Category_Name, Category_Id) %>% 
+    mutate(Main_Category = case_when(
+        id == 115 | id == 116 | id == 118 | id == 1  ~ 'Baby',
+        id == 131 | id == 44 | id == 27 | id == 25 | id == 36 | id == 21 | id == 6 | id == 114 | id == 32 | id == 43 | id == 42 | 
+            id == 34 | id == 7 | id == 2 ~ 'Cleaning',
+        id == 9 | id == 8 | id == 14 | id == 23 | id == 3 | id == 13 ~ 'Drinks',
+        id == 30 | id == 24 | id == 31 | id == 41 | id == 38 | id == 35 | id == 28 | id == 39 | id == 56 | id == 60 | id == 4
+          ~ 'Personal_Care',
+        id == 101 | id == 112 | id == 115 | id == 75 | id == 85 | id == 59 | id == 47 | id == 69 | id == 68 | id == 82 | id == 52
+        | id == 117 | id == 107 | id == 87 | id == 76 | id == 61 | id == 62 | id == 86 | id == 53 | id == 110 | id == 55 | id == 74
+        | id == 130 | id == 48 | id == 51 | id == 73 | id == 58 | id == 108 | id == 49 | id == 70 | id == 71 | id == 23 | id == 94 | 
+          id == 63
+        | id == 79 | id == 90 | id == 109 | id == 113 | id == 84 | id == 67 | id == 66 | id == 54 | id == 57 | id == 5 ~ 'Food',
+        TRUE ~ 'Other'
+    )
+    )
+# renaming variables
+Categories <- rename(Categories, category_id = Category_Id)
+# Merging the 2 datasets
+Total <- merge(bar, Categories, by ='Category_Name')
+# Reordering the columns
+Total <- Total[,c(5,8,9,1,3,4,2,7,6)]
+# deleting unnecessary columns 
+Total <- subset(Total, select = -c(id))
+# Renaming
+Total <- rename(Total, Main_Category_Id = category_id.y)
+Total <- rename(Total, CategoryName_id = category_id.x)
+Total <- rename(Total, Product_Description = name)
+Total <- Total %>% 
+  group_by(product_id) %>% 
+  arrange(product_id)
+```
+
+```{R, Analyzing markets dataset}
+summary(Markets)
+which(is.na(Markets))
+# After some inspection we find out that all NA values are in the same rows of our columns 
+# so we use na.omit function
+Markets <- na.omit(Markets)
+
+# Merging Markets with total by BARCODE
+Total <- merge(Markets, Total, by = 'BARCODE')
+Total <- Total %>% 
+    group_by(product_id) %>% 
+    arrange(product_id)
+
+# exporting the total file
+write.csv(Total, file ='Total.csv')
+write_xlsx(Total, 'C:/Users/Lazaros/R/playground/Total.xlsx')
+```
