@@ -131,4 +131,30 @@ Total <- Total %>%
 
 # exporting the total file
 write_xlsx(Total, 'C:/Users/Lazaros/R/playground/Total.xlsx')
+
+```
+
+```{R, Visuals}
+# what is the most profitable product category for AB
+
+ggplot(Total,aes(Main_Category,AB)) +
+    geom_bar(stat = 'identity') +
+    labs(x = 'Product Category',
+         y = 'Frequency',
+         title = 'Most Profitable Product Category',
+         subtitle = 'Super-Market: AB')
+
+AB <- Total %>% 
+  select(product_id, AB, Main_Category_Id, Main_Category, Category_Name) %>% 
+  filter(Main_Category == 'Food')  %>% 
+  group_by(AB) %>% 
+  arrange(desc(AB))
+
+ggplot(AB, aes(Category_Name, AB)) +
+  geom_bar(stat = 'identity') +
+  labs(x = 'Category Name',
+       y = 'Total Sum',
+       title = 'Which is the most preferred category from Food',
+       subtitle = 'Market: AB') +
+  coord_flip()
 ```
