@@ -15,8 +15,8 @@ with an extra excel file which is exported from tidy data  after analyzing them.
 # Installation 
 
 ```R
-setwd('C:/Users/Lazaros/R/playground')
-.libPaths('C:/Users/Lazaros')
+setwd('C"/YourPathGoesHere/')
+.libPaths('C:/Users/')
 ```
 
 # Libraries
@@ -59,21 +59,6 @@ bar <- read_csv("WorkingData/bar.csv")
 ![Sheet 3](https://user-images.githubusercontent.com/47696240/134463641-d9e51019-1abc-4ce1-941f-cfb11f0f1b63.png)
 
 # Code Samples
-```R 
-ggplot(Total,aes(Main_Category,AB)) +
-    geom_bar(stat = 'identity') +
-    labs(x = 'Product Category',
-         y = 'Frequency',
-         title = 'Most Profitable Product Category',
-         subtitle = 'Super-Market: AB')
-```
-```R
-AB <- Total %>% 
-  select(product_id, AB, Main_Category_Id, Main_Category, Category_Name) %>% 
-  filter(Main_Category == 'Food')  %>% 
-  group_by(AB) %>% 
-  arrange(desc(AB))
-```
 ```R
 ggplot(AB, aes(Category_Name, AB)) +
   geom_bar(stat = 'identity') +
